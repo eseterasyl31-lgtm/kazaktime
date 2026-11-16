@@ -154,7 +154,7 @@
 
                 <!-- Right Side: Telegram Shortcut & Menu Button -->
                 <div class="flex items-center gap-3">
-                    <a href="https://t.me/kazakhtime_mc" target="_blank" class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-500/10 border border-sky-400/30 text-sky-300 hover:bg-sky-500 hover:text-white transition-all text-xs font-bold">
+                    <a href="https://t.me/nexdev_kz" target="_blank" class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-500/10 border border-sky-400/30 text-sky-300 hover:bg-sky-500 hover:text-white transition-all text-xs font-bold">
                         <i class="fa-brands fa-telegram text-base"></i>
                         <span>Telegram</span>
                     </a>
@@ -208,7 +208,7 @@
                             <i class="fa-solid fa-headset w-5"></i>
                             <span>Қолдау (@nexbr0)</span>
                         </a>
-                        <a href="https://t.me/kazakhtime_mc" target="_blank" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300 hover:bg-sky-500 hover:text-white transition-all">
+                        <a href="https://t.me/nexdev_kz" target="_blank" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300 hover:bg-sky-500 hover:text-white transition-all">
                             <i class="fa-brands fa-telegram w-5"></i>
                             <span>Telegram Канал</span>
                         </a>
@@ -242,9 +242,9 @@
                     <div class="frost-card p-5 rounded-2xl flex items-center justify-between border-l-4 border-l-ice-500">
                         <div class="text-left">
                             <div class="text-xs font-bold text-gray-400 uppercase tracking-wider">Java Edition</div>
-                            <div class="font-montserrat font-bold text-lg text-white">kazaktime.lol</div>
+                            <div class="font-montserrat font-bold text-lg text-white">kazaktime.art</div>
                         </div>
-                        <button onclick="copyToClipboard('kazaktime.lol', 'Java IP')" class="px-4 py-2 rounded-xl bg-ice-500/20 text-ice-300 hover:bg-ice-500 hover:text-black font-bold text-xs transition-all flex items-center gap-2">
+                        <button onclick="copyToClipboard('kazaktime.art', 'Java IP')" class="px-4 py-2 rounded-xl bg-ice-500/20 text-ice-300 hover:bg-ice-500 hover:text-black font-bold text-xs transition-all flex items-center gap-2">
                             <i class="fa-solid fa-copy"></i>
                             <span>Көшіру</span>
                         </button>
@@ -254,10 +254,10 @@
                     <div class="frost-card p-5 rounded-2xl flex items-center justify-between border-l-4 border-l-emerald-400">
                         <div class="text-left">
                             <div class="text-xs font-bold text-gray-400 uppercase tracking-wider">Bedrock Edition</div>
-                            <div class="font-montserrat font-bold text-base text-white">IP: kazaktime.lol</div>
+                            <div class="font-montserrat font-bold text-base text-white">IP: kazaktime.art</div>
                             <div class="text-xs text-emerald-400">Port: 65555</div>
                         </div>
-                        <button onclick="copyToClipboard('kazaktime.lol:65555', 'Bedrock IP & Port')" class="px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500 hover:text-black font-bold text-xs transition-all flex items-center gap-2">
+                        <button onclick="copyToClipboard('kazaktime.art:65555', 'Bedrock IP & Port')" class="px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500 hover:text-black font-bold text-xs transition-all flex items-center gap-2">
                             <i class="fa-solid fa-copy"></i>
                             <span>Көшіру</span>
                         </button>
@@ -406,7 +406,7 @@
                         Нефрит сатып алу
                     </h2>
                     <p class="text-gray-300 text-sm mt-2">
-                        Серверлік валюта: <span class="font-semibold text-white">1 нефрит = 1 ₸</span>
+                        Серверлік валюта: <span class="font-semibold text-white">10 нефрит = 1 ₸</span>
                     </p>
                 </div>
 
@@ -439,7 +439,7 @@
                             <div id="nephriteLabel" class="text-sm text-gray-400 font-medium">100 нефрит</div>
                         </div>
                         <div class="text-right">
-                            <span id="nephritePrice" class="font-montserrat font-black text-3xl text-ice-500">100 ₸</span>
+                            <span id="nephritePrice" class="font-montserrat font-black text-3xl text-ice-500">10 ₸</span>
                         </div>
                     </div>
 
@@ -742,9 +742,19 @@
         }
 
         function renderNephritePrice(amount) {
-            const price = amount;
+            const price = Math.max(1, Math.round(amount / 10));
             document.getElementById('nephriteLabel').textContent = `${amount.toLocaleString()} нефрит`;
             document.getElementById('nephritePrice').textContent = `${price.toLocaleString()} ₸`;
+        }
+
+        function buyNephrite() {
+            const amount = parseInt(document.getElementById('nephriteInput').value) || 0;
+            if (amount < 10) {
+                showToast('Минималды тапсырыс — 10 нефрит');
+                return;
+            }
+            const price = Math.max(1, Math.round(amount / 10));
+            openModal(`${amount.toLocaleString()} Нефрит`, price);
         }
 
         function buyNephrite() {
