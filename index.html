@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kazaktime — Minecraft Server</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ice: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            300: '#70d6ff',
+                            400: '#38bdf8',
+                            500: '#00f0ff',
+                            600: '#0284c7',
+                            900: '#0c192e',
+                            dark: '#070b14'
+                        }
+                    },
+                    fontFamily: {
+                        montserrat: ['Montserrat', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #070b14;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.12), transparent 60%),
+                radial-gradient(circle at 80% 80%, rgba(2, 132, 199, 0.1), transparent 50%),
+                radial-gradient(circle at 20% 50%, rgba(112, 214, 255, 0.05), transparent 40%);
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+
+        #snowCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #e0f2fe 0%, #00f0ff 50%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, #0284c7 0%, #00f0ff 100%);
+            box-shadow: 0 4px 20px rgba(0, 240, 255, 0.35);
+            transition: all 0.3s ease;
+            color: #070b14;
+        }
+
+        .btn-gradient:hover {
+            background: linear-gradient(135deg, #38bdf8 0%, #70d6ff 100%);
+            box-shadow: 0 6px 25px rgba(0, 240, 255, 0.55);
+            transform: translateY(-2px);
+        }
+
+        .frost-card {
+            background: rgba(12, 25, 46, 0.65);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .frost-card:hover {
+            border-color: rgba(0, 240, 255, 0.5);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px -10px rgba(0, 240, 255, 0.3);
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #1e293b;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            height: 22px;
+            width: 22px;
+            border-radius: 50%;
+            background: #00f0ff;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -7px;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.9);
+            transition: transform 0.1s ease;
+        }
+
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .drawer-slide {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-ice-500 selection:text-black relative">
+
+    <!-- Background Snow Particles -->
+    <canvas id="snowCanvas"></canvas>
+
+    <div class="relative z-10 flex flex-col min-h-screen justify-between">
+
+        <!-- Header -->
+        <header class="sticky top-0 z-40 bg-[#070b14]/85 backdrop-blur-md border-b border-ice-500/20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+                
+                <!-- Left: Kazaktime Logo -->
+                <a href="#" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-ice-600 to-ice-500 flex items-center justify-center text-black font-extrabold text-xl shadow-lg shadow-ice-500/30 group-hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-snowflake text-black"></i>
+                    </div>
+                    <div>
+                        <span class="font-montserrat font-black text-xl sm:text-2xl tracking-wider text-white group-hover:text-ice-500 transition-colors">KAZAKTIME</span>
+                        <span class="block text-[10px] text-ice-300 font-bold tracking-widest uppercase -mt-1">Winter 1.21.x</span>
+                    </div>
+                </a>
+
+                <!-- Right Side: Telegram Shortcut & Menu Button -->
+                <div class="flex items-center gap-3">
+                    <a href="https://t.me/kazakhtime_mc" target="_blank" class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-500/10 border border-sky-400/30 text-sky-300 hover:bg-sky-500 hover:text-white transition-all text-xs font-bold">
+                        <i class="fa-brands fa-telegram text-base"></i>
+                        <span>Telegram</span>
+                    </a>
+
+                    <button onclick="toggleSidebar()" aria-label="Open Menu" class="p-3 rounded-xl bg-ice-500/10 border border-ice-500/30 text-ice-500 hover:bg-ice-500 hover:text-black transition-all flex items-center justify-center">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sidebar Drawer (Opened from right side) -->
+        <div id="drawerBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+        
+        <aside id="sidebar" class="fixed top-0 right-0 h-full w-80 bg-[#0c192e] border-l border-ice-500/20 z-50 translate-x-full drawer-slide p-6 flex flex-col justify-between shadow-2xl">
+            <div>
+                <div class="flex items-center justify-between pb-6 border-b border-white/10 mb-6">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-snowflake text-ice-500 text-2xl"></i>
+                        <span class="font-montserrat font-black text-xl text-white">МЕНЮ</span>
+                    </div>
+                    <button onclick="toggleSidebar()" class="w-8 h-8 rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-red-500/20 flex items-center justify-center transition-all">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <nav class="space-y-3 font-semibold">
+                    <a href="#" onclick="toggleSidebar()" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-ice-500/10 text-gray-200 hover:text-ice-500 transition-all">
+                        <i class="fa-solid fa-house text-ice-500 w-5"></i>
+                        <span>Басты бет</span>
+                    </a>
+                    <a href="#ranks" onclick="toggleSidebar()" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-ice-500/10 text-gray-200 hover:text-ice-500 transition-all">
+                        <i class="fa-solid fa-crown text-ice-500 w-5"></i>
+                        <span>Донаттар</span>
+                    </a>
+                    <a href="#cases" onclick="toggleSidebar()" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-ice-500/10 text-gray-200 hover:text-ice-500 transition-all">
+                        <i class="fa-solid fa-box-open text-ice-500 w-5"></i>
+                        <span>Кейстер & Қызметтер</span>
+                    </a>
+                    <a href="#nephrite" onclick="toggleSidebar()" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-ice-500/10 text-gray-200 hover:text-ice-500 transition-all">
+                        <i class="fa-solid fa-gem text-ice-500 w-5"></i>
+                        <span>Нефриттер</span>
+                    </a>
+                    <a href="#rules" onclick="toggleSidebar()" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-ice-500/10 text-gray-200 hover:text-ice-500 transition-all">
+                        <i class="fa-solid fa-book-skull text-ice-500 w-5"></i>
+                        <span>Ережелер</span>
+                    </a>
+                    
+                    <div class="pt-4 border-t border-white/10 space-y-3">
+                        <a href="https://t.me/nexbr0" target="_blank" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500 hover:text-black transition-all">
+                            <i class="fa-solid fa-headset w-5"></i>
+                            <span>Қолдау (@nexbr0)</span>
+                        </a>
+                        <a href="https://t.me/kazakhtime_mc" target="_blank" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300 hover:bg-sky-500 hover:text-white transition-all">
+                            <i class="fa-brands fa-telegram w-5"></i>
+                            <span>Telegram Канал</span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+            <div class="text-xs text-gray-500 text-center border-t border-white/10 pt-4">
+                Kazaktime Minecraft Server © 2026
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20 pt-10 pb-24">
+
+            <!-- HERO & IP CARDS SECTION -->
+            <section class="text-center space-y-8">
+                <div class="inline-block px-4 py-1.5 rounded-full bg-ice-500/10 border border-ice-500/30 text-ice-300 text-xs font-bold uppercase tracking-widest">
+                    ❄️ Winter Edition 1.21.x
+                </div>
+                
+                <h1 class="font-montserrat text-4xl sm:text-6xl font-black text-white tracking-tight">
+                    ҚОШ КЕЛДІҢІЗ, <span class="gradient-text">KAZAKTIME</span> СЕРВЕРІНЕ!
+                </h1>
+                
+                <p class="max-w-2xl mx-auto text-gray-400 text-sm sm:text-base">
+                    Қазақстандағы ең қызықты анархиялық Minecraft сервері. Екі платформада да қосылып ойнай аласыз!
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                    <!-- Java IP Card -->
+                    <div class="frost-card p-5 rounded-2xl flex items-center justify-between border-l-4 border-l-ice-500">
+                        <div class="text-left">
+                            <div class="text-xs font-bold text-gray-400 uppercase tracking-wider">Java Edition</div>
+                            <div class="font-montserrat font-bold text-lg text-white">kazaktime.lol</div>
+                        </div>
+                        <button onclick="copyToClipboard('kazaktime.lol', 'Java IP')" class="px-4 py-2 rounded-xl bg-ice-500/20 text-ice-300 hover:bg-ice-500 hover:text-black font-bold text-xs transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-copy"></i>
+                            <span>Көшіру</span>
+                        </button>
+                    </div>
+
+                    <!-- Bedrock IP Card -->
+                    <div class="frost-card p-5 rounded-2xl flex items-center justify-between border-l-4 border-l-emerald-400">
+                        <div class="text-left">
+                            <div class="text-xs font-bold text-gray-400 uppercase tracking-wider">Bedrock Edition</div>
+                            <div class="font-montserrat font-bold text-base text-white">IP: kazaktime.lol</div>
+                            <div class="text-xs text-emerald-400">Port: 65555</div>
+                        </div>
+                        <button onclick="copyToClipboard('kazaktime.lol:65555', 'Bedrock IP & Port')" class="px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500 hover:text-black font-bold text-xs transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-copy"></i>
+                            <span>Көшіру</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- DONATIONS SECTION -->
+            <section id="ranks" class="scroll-mt-24">
+                <div class="text-center mb-10 px-2">
+                    <h2 class="font-montserrat text-3xl sm:text-4xl font-extrabold text-white mb-3">
+                        <i class="fa-solid fa-crown text-ice-500 mr-2"></i> ДОНАТ МӘРТЕБЕЛЕРІ
+                    </h2>
+                    <p class="text-gray-400 text-sm sm:text-base">Серверде өзіңізге ұнайтын артықшылықтарды таңдап, арнайы мәртебеге ие болыңыз</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Rank 1: Батыр -->
+                    <div class="frost-card rounded-2xl p-6 flex flex-col justify-between border-t-4 border-t-sky-400 relative overflow-hidden group">
+                        <div>
+                            <div class="text-xs uppercase font-bold text-sky-400 tracking-wider mb-1">Мәртебе</div>
+                            <h3 class="text-2xl font-montserrat font-extrabold text-white mb-2">Батыр</h3>
+                            <p class="text-xs text-gray-400 mb-6">Ойынды бастаушы батырларға арналған базалық артықшылықтар топтамасы.</p>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-montserrat font-black text-ice-300 mb-4">180 <span class="text-sm font-normal text-gray-400">₸</span></div>
+                            <button onclick="openModal('Батыр', 180)" class="w-full btn-gradient py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-cart-shopping"></i> Сатып алу
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Rank 2: Қолбасшы -->
+                    <div class="frost-card rounded-2xl p-6 flex flex-col justify-between border-t-4 border-t-cyan-400 relative overflow-hidden group">
+                        <div>
+                            <div class="text-xs uppercase font-bold text-cyan-400 tracking-wider mb-1">Мәртебе</div>
+                            <h3 class="text-2xl font-montserrat font-extrabold text-white mb-2">Қолбасшы</h3>
+                            <p class="text-xs text-gray-400 mb-6">Командаңызды бастайтын нағыз қолбасшылар таңдауы.</p>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-montserrat font-black text-ice-300 mb-4">420 <span class="text-sm font-normal text-gray-400">₸</span></div>
+                            <button onclick="openModal('Қолбасшы', 420)" class="w-full btn-gradient py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-cart-shopping"></i> Сатып алу
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Rank 3: Төре -->
+                    <div class="frost-card rounded-2xl p-6 flex flex-col justify-between border-t-4 border-t-teal-400 relative overflow-hidden group">
+                        <div>
+                            <div class="text-xs uppercase font-bold text-teal-400 tracking-wider mb-1">Мәртебе</div>
+                            <h3 class="text-2xl font-montserrat font-extrabold text-white mb-2">Төре</h3>
+                            <p class="text-xs text-gray-400 mb-6">Сыйлы да беделді ойыншыларға арналған кеңейтілген мүмкіндіктер.</p>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-montserrat font-black text-ice-300 mb-4">800 <span class="text-sm font-normal text-gray-400">₸</span></div>
+                            <button onclick="openModal('Төре', 800)" class="w-full btn-gradient py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-cart-shopping"></i> Сатып алу
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Rank 4: Мырза -->
+                    <div class="frost-card rounded-2xl p-6 flex flex-col justify-between border-t-4 border-t-indigo-400 relative overflow-hidden group">
+                        <div>
+                            <div class="text-xs uppercase font-bold text-indigo-400 tracking-wider mb-1">Мәртебе</div>
+                            <h3 class="text-2xl font-montserrat font-extrabold text-white mb-2">Мырза</h3>
+                            <p class="text-xs text-gray-400 mb-6">Жоғары қолайлылық пен ерекше командаларға қол жеткізіңіз.</p>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-montserrat font-black text-ice-300 mb-4">1 200 <span class="text-sm font-normal text-gray-400">₸</span></div>
+                            <button onclick="openModal('Мырза', 1200)" class="w-full btn-gradient py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-cart-shopping"></i> Сатып алу
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Rank 5: Сұлтан -->
+                    <div class="frost-card rounded-2xl p-6 flex flex-col justify-between border-t-4 border-t-blue-400 relative overflow-hidden group">
+                        <div>
+                            <div class="text-xs uppercase font-bold text-blue-400 tracking-wider mb-1">Танымал Мәртебе</div>
+                            <h3 class="text-2xl font-montserrat font-extrabold text-white mb-2">Сұлтан</h3>
+                            <p class="text-xs text-gray-400 mb-6">Элиталық ойын тәжірибесі мен максималды мүмкіндіктер.</p>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-montserrat font-black text-ice-300 mb-4">1 800 <span class="text-sm font-normal text-gray-400">₸</span></div>
+                            <button onclick="openModal('Сұлтан', 1800)" class="w-full btn-gradient py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-cart-shopping"></i> Сатып алу
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Rank 6: Ханзада -->
+                    <div class="frost-card rounded-2xl p-6 flex flex-col justify-between border-t-4 border-t-purple-400 relative overflow-hidden group">
+                        <div>
+                            <div class="text-xs uppercase font-bold text-purple-400 tracking-wider mb-1">Премиум Мәртебе</div>
+                            <h3 class="text-2xl font-montserrat font-extrabold text-white mb-2">Ханзада</h3>
+                            <p class="text-xs text-gray-400 mb-6">Пайдаланушылар арасында жоғары бедел мен арнайы префикс.</p>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-montserrat font-black text-ice-300 mb-4">2 250 <span class="text-sm font-normal text-gray-400">₸</span></div>
+                            <button onclick="openModal('Ханзада', 2250)" class="w-full btn-gradient py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-cart-shopping"></i> Сатып алу
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Rank 7: Әмірші -->
+                    <div class="frost-card rounded-2xl p-6 flex flex-col justify-between border-t-4 border-t-amber-400 relative overflow-hidden group">
+                        <div>
+                            <div class="text-xs uppercase font-bold text-amber-400 tracking-wider mb-1">Жоғарғы Мәртебе</div>
+                            <h3 class="text-2xl font-montserrat font-extrabold text-white mb-2">Әмірші</h3>
+                            <p class="text-xs text-gray-400 mb-6">Серверді билеушілерге арналған эксклюзивті мүмкіндіктер.</p>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-montserrat font-black text-ice-300 mb-4">3 000 <span class="text-sm font-normal text-gray-400">₸</span></div>
+                            <button onclick="openModal('Әмірші', 3000)" class="w-full btn-gradient py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-cart-shopping"></i> Сатып алу
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Rank 8: Қаһарман -->
+                    <div class="frost-card rounded-2xl p-6 flex flex-col justify-between border-t-4 border-t-ice-500 relative overflow-hidden group shadow-2xl shadow-ice-500/20">
+                        <div class="absolute -right-12 -top-12 w-28 h-28 bg-ice-500/20 rounded-full blur-xl pointer-events-none"></div>
+                        <div>
+                            <div class="inline-block px-2.5 py-0.5 rounded bg-ice-500/20 text-ice-300 text-[10px] font-black uppercase tracking-wider mb-2">Максималды Мәртебе</div>
+                            <h3 class="text-2xl font-montserrat font-black text-ice-300 mb-2">Қаһарман</h3>
+                            <p class="text-xs text-gray-400 mb-6">Сервердегі ең жоғары артықшылықтар топтамасы, шексіз мүмкіндіктер.</p>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-montserrat font-black text-ice-500 mb-4">4 000 <span class="text-sm font-normal text-gray-400">₸</span></div>
+                            <button onclick="openModal('Қаһарман', 4000)" class="w-full btn-gradient py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-crown"></i> Сатып алу
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- NEPHRITE CALCULATOR SECTION -->
+            <section id="nephrite" class="scroll-mt-24 max-w-2xl mx-auto">
+                <div class="text-center mb-8 px-2">
+                    <h2 class="font-montserrat text-3xl sm:text-4xl font-black text-ice-500 tracking-wide uppercase drop-shadow-[0_2px_15px_rgba(0,240,255,0.4)]">
+                        Нефрит сатып алу
+                    </h2>
+                    <p class="text-gray-300 text-sm mt-2">
+                        Серверлік валюта: <span class="font-semibold text-white">1 нефрит = 1 ₸</span>
+                    </p>
+                </div>
+
+                <div class="bg-[#0c192e]/90 border border-ice-500/20 rounded-3xl p-5 sm:p-8 shadow-2xl relative backdrop-blur-xl">
+                    
+                    <label class="block text-gray-300 text-sm font-medium mb-3">Қанша нефрит керек?</label>
+
+                    <div class="bg-[#070b14] border border-ice-500/30 rounded-2xl p-4 mb-6 text-left">
+                        <input type="number" id="nephriteInput" value="100" min="10" max="10000" 
+                               class="bg-transparent w-full text-white font-montserrat font-extrabold text-3xl focus:outline-none tracking-wide"
+                               oninput="updateNephriteFromInput(this.value)">
+                    </div>
+
+                    <div class="mb-8 px-1">
+                        <input type="range" id="nephriteRange" min="10" max="10000" step="10" value="100" 
+                               oninput="updateNephriteFromSlider(this.value)">
+                    </div>
+
+                    <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-8">
+                        <button onclick="setNephriteAmount(100)" class="quick-btn bg-white/5 hover:bg-ice-500/20 border border-white/10 hover:border-ice-500/50 rounded-xl py-2.5 text-xs font-bold text-gray-300 transition-all">100</button>
+                        <button onclick="setNephriteAmount(500)" class="quick-btn bg-white/5 hover:bg-ice-500/20 border border-white/10 hover:border-ice-500/50 rounded-xl py-2.5 text-xs font-bold text-gray-300 transition-all">500</button>
+                        <button onclick="setNephriteAmount(1000)" class="quick-btn bg-white/5 hover:bg-ice-500/20 border border-white/10 hover:border-ice-500/50 rounded-xl py-2.5 text-xs font-bold text-gray-300 transition-all">1 000</button>
+                        <button onclick="setNephriteAmount(2500)" class="quick-btn bg-white/5 hover:bg-ice-500/20 border border-white/10 hover:border-ice-500/50 rounded-xl py-2.5 text-xs font-bold text-gray-300 transition-all">2 500</button>
+                        <button onclick="setNephriteAmount(5000)" class="quick-btn bg-white/5 hover:bg-ice-500/20 border border-white/10 hover:border-ice-500/50 rounded-xl py-2.5 text-xs font-bold text-gray-300 transition-all">5 000</button>
+                        <button onclick="setNephriteAmount(10000)" class="quick-btn bg-white/5 hover:bg-ice-500/20 border border-white/10 hover:border-ice-500/50 rounded-xl py-2.5 text-xs font-bold text-gray-300 transition-all">10 000</button>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2">
+                        <div>
+                            <div id="nephriteLabel" class="text-sm text-gray-400 font-medium">100 нефрит</div>
+                        </div>
+                        <div class="text-right">
+                            <span id="nephritePrice" class="font-montserrat font-black text-3xl text-ice-500">100 ₸</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <button onclick="buyNephrite()" class="w-full btn-gradient py-4 rounded-2xl font-montserrat font-extrabold text-lg flex items-center justify-center gap-3">
+                            <i class="fa-solid fa-cart-shopping text-xl"></i>
+                            <span>Сатып алу</span>
+                        </button>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- CASES SECTION -->
+            <section id="cases" class="scroll-mt-24">
+                <div class="text-center mb-10 px-2">
+                    <h2 class="font-montserrat text-3xl sm:text-4xl font-extrabold text-white mb-3">
+                        <i class="fa-solid fa-box-open text-ice-500 mr-2"></i> КЕЙСТЕР
+                    </h2>
+                    <p class="text-gray-400 text-sm sm:text-base">Сәттілігіңізді сынап, сирек кездесетін бағалы сыйлықтарды ұтып алыңыз</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- DONATE CASE -->
+                    <div class="frost-card rounded-3xl p-6 sm:p-8 border border-ice-500/20 relative overflow-hidden">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-ice-500/10 text-ice-500 flex items-center justify-center text-2xl sm:text-3xl shrink-0">
+                                <i class="fa-solid fa-box-archive"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl sm:text-2xl font-montserrat font-extrabold text-white">Донат Кейс</h3>
+                                <p class="text-xs text-gray-400">Ішінен кез келген донат мәртебесі түсуі мүмкін!</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-ice-500/30 transition-all">
+                                <span class="font-bold text-gray-200 text-sm sm:text-base">1 кейс</span>
+                                <div class="flex items-center gap-3 sm:gap-4">
+                                    <span class="font-montserrat font-bold text-ice-300 text-base sm:text-lg">500 ₸</span>
+                                    <button onclick="openModal('1 Донат Кейс', 500)" class="btn-gradient px-4 py-2 rounded-xl text-xs font-bold">Алу</button>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-ice-500/30 transition-all">
+                                <span class="font-bold text-gray-200 text-sm sm:text-base">3 кейс</span>
+                                <div class="flex items-center gap-3 sm:gap-4">
+                                    <span class="font-montserrat font-bold text-ice-300 text-base sm:text-lg">1 200 ₸</span>
+                                    <button onclick="openModal('3 Донат Кейс', 1200)" class="btn-gradient px-4 py-2 rounded-xl text-xs font-bold">Алу</button>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-ice-500/30 transition-all">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-gray-200 text-sm sm:text-base">5 кейс</span>
+                                    <span class="px-2 py-0.5 rounded bg-ice-500/20 text-ice-300 text-[10px] font-bold">Тиімді</span>
+                                </div>
+                                <div class="flex items-center gap-3 sm:gap-4">
+                                    <span class="font-montserrat font-bold text-ice-300 text-base sm:text-lg">2 000 ₸</span>
+                                    <button onclick="openModal('5 Донат Кейс', 2000)" class="btn-gradient px-4 py-2 rounded-xl text-xs font-bold">Алу</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NEPHRITE CASE -->
+                    <div class="frost-card rounded-3xl p-6 sm:p-8 border border-ice-500/20 relative overflow-hidden">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-2xl sm:text-3xl shrink-0">
+                                <i class="fa-solid fa-gem"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl sm:text-2xl font-montserrat font-extrabold text-white">Нефрит Кейс</h3>
+                                <p class="text-xs text-gray-400">Үлкен мөлшердегі нефрит валютасын ұтып алу мүмкіндігі.</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-emerald-500/30 transition-all">
+                                <span class="font-bold text-gray-200 text-sm sm:text-base">1 кейс</span>
+                                <div class="flex items-center gap-3 sm:gap-4">
+                                    <span class="font-montserrat font-bold text-emerald-400 text-base sm:text-lg">400 ₸</span>
+                                    <button onclick="openModal('1 Нефрит Кейс', 400)" class="btn-gradient px-4 py-2 rounded-xl text-xs font-bold">Алу</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- SERVICES SECTION -->
+            <section id="services" class="scroll-mt-24 max-w-3xl mx-auto">
+                <div class="text-center mb-8 px-2">
+                    <h2 class="font-montserrat text-3xl sm:text-4xl font-extrabold text-white mb-3">
+                        <i class="fa-solid fa-shield-halved text-ice-500 mr-2"></i> ҚЫЗМЕТТЕР
+                    </h2>
+                    <p class="text-gray-400 text-sm sm:text-base">Аккаунтыңызға арналған қосымша қызмет түрлері</p>
+                </div>
+
+                <div class="frost-card rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-4 border border-ice-500/20">
+                    <div class="flex items-center gap-4 text-center sm:text-left">
+                        <div class="w-14 h-14 rounded-2xl bg-red-500/10 text-red-400 flex items-center justify-center text-2xl shrink-0">
+                            <i class="fa-solid fa-user-check"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-montserrat font-extrabold text-white">Разбан қызметі</h3>
+                            <p class="text-xs text-gray-400">Банды алып тастап, серверде қайта ойнау мүмкіндігі</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="font-montserrat font-black text-2xl text-white">800 <span class="text-sm font-normal text-gray-400">₸</span></span>
+                        <button onclick="openModal('Разбан', 800)" class="btn-gradient px-6 py-3 rounded-xl text-sm font-bold">
+                            Сатып алу
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RULES SECTION -->
+            <section id="rules" class="scroll-mt-24 max-w-4xl mx-auto">
+                <div class="text-center mb-10 px-2">
+                    <h2 class="font-montserrat text-3xl sm:text-4xl font-extrabold text-white mb-3">
+                        <i class="fa-solid fa-book-skull text-ice-500 mr-2"></i> СЕРВЕР ЕРЕЖЕЛЕРІ
+                    </h2>
+                    <p class="text-gray-400 text-sm sm:text-base">Анархия режиміндегі тәртіп пен әділ ойнау ережелері</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="frost-card p-5 rounded-2xl flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-ice-500/10 text-ice-500 font-montserrat font-black text-lg flex items-center justify-center shrink-0">1</div>
+                        <div>
+                            <h4 class="font-bold text-white mb-1">Гриферлік ережесі</h4>
+                            <p class="text-xs text-gray-400">Гриферлік және базаларды бұзуға рұқсат етіледі (Анархия сервері).</p>
+                        </div>
+                    </div>
+
+                    <div class="frost-card p-5 rounded-2xl flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-ice-500/10 text-ice-500 font-montserrat font-black text-lg flex items-center justify-center shrink-0">2</div>
+                        <div>
+                            <h4 class="font-bold text-white mb-1">Читтерге тыйым салынады</h4>
+                            <p class="text-xs text-gray-400">Читерлік программаларды (X-Ray, Fly, KillAura т.б.) пайдалануға тыйым салынады. (Жаза: Бан).</p>
+                        </div>
+                    </div>
+
+                    <div class="frost-card p-5 rounded-2xl flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-ice-500/10 text-ice-500 font-montserrat font-black text-lg flex items-center justify-center shrink-0">3</div>
+                        <div>
+                            <h4 class="font-bold text-white mb-1">Сервер қауіпсіздігі</h4>
+                            <p class="text-xs text-gray-400">Серверге ДДОС (DDoS) шабуыл жасау немесе сервер жұмысына кедергі келтіруге тыйым салынады.</p>
+                        </div>
+                    </div>
+
+                    <div class="frost-card p-5 rounded-2xl flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-ice-500/10 text-ice-500 font-montserrat font-black text-lg flex items-center justify-center shrink-0">4</div>
+                        <div>
+                            <h4 class="font-bold text-white mb-1">Сөйлесу мәдениеті</h4>
+                            <p class="text-xs text-gray-400">Ойыншыларды немесе администрацияны дөрекі балағаттауға тыйым салынады.</p>
+                        </div>
+                    </div>
+
+                    <div class="frost-card p-5 rounded-2xl flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-ice-500/10 text-ice-500 font-montserrat font-black text-lg flex items-center justify-center shrink-0">5</div>
+                        <div>
+                            <h4 class="font-bold text-white mb-1">Жарнамаға тыйым</h4>
+                            <p class="text-xs text-gray-400">Өзге серверлерді жарнамалауға (Реклама) тыйым салынады.</p>
+                        </div>
+                    </div>
+
+                    <div class="frost-card p-5 rounded-2xl flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-ice-500/10 text-ice-500 font-montserrat font-black text-lg flex items-center justify-center shrink-0">6</div>
+                        <div>
+                            <h4 class="font-bold text-white mb-1">Мүлік саясаты</h4>
+                            <p class="text-xs text-gray-400">Донат пен ойын ішіндегі мүліктерді қайтару немесе нақты ақшаға сатуға тыйым салынады.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- FOOTER SECTION -->
+        <footer class="bg-[#04070d] border-t border-ice-500/20 py-12 px-4">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+                <div>
+                    <div class="font-montserrat font-black text-xl text-white mb-1">KAZAKTIME</div>
+                    <p class="text-xs text-gray-400">2026 • kazaktime барлық құқықтар қорғалған</p>
+                </div>
+                <div class="text-xs text-ice-300 font-mono bg-ice-500/10 px-4 py-2 rounded-xl border border-ice-500/20">
+                    Java × Bedrock 1.21.x
+                </div>
+            </div>
+        </footer>
+
+        <!-- PURCHASE MODAL -->
+        <div id="purchaseModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+            <div class="frost-card bg-[#0c192e] max-w-md w-full rounded-3xl p-6 sm:p-8 border border-ice-500/30 relative shadow-2xl">
+                <button onclick="closeModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <h3 class="text-2xl font-montserrat font-black text-white mb-1">Тапсырысты рәсімдеу</h3>
+                <p id="modalItemTitle" class="text-sm text-ice-500 font-bold mb-6">Батыр — 180 ₸</p>
+
+                <form onsubmit="submitToTelegram(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">Ойыншы нигі (Nickname)</label>
+                        <input type="text" id="nicknameInput" required placeholder="Мысалы: Player123" 
+                               class="w-full bg-[#070b14] border border-ice-500/30 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:border-ice-500 transition-colors">
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-white/5 text-xs text-gray-400 space-y-2 border border-white/5">
+                        <div class="flex justify-between">
+                            <span>Тауар:</span>
+                            <span id="modalSummaryItem" class="font-bold text-gray-200">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Төлейтін сумма:</span>
+                            <span id="modalSummaryPrice" class="font-bold text-ice-500 text-sm">-</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full btn-gradient py-4 rounded-xl font-bold text-base flex items-center justify-center gap-3">
+                        <i class="fa-brands fa-telegram text-xl"></i>
+                        <span>Телеграм арқылы сатып алу</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- TOAST NOTIFICATION -->
+        <div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+            <div class="bg-ice-500 text-black px-5 py-3 rounded-2xl shadow-2xl font-bold text-sm flex items-center gap-3 border border-ice-300">
+                <i class="fa-solid fa-circle-check text-lg"></i>
+                <span id="toastMessage">Көшірілді!</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        let currentItemName = '';
+        let currentItemPrice = 0;
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('drawerBackdrop');
+            
+            if (sidebar.classList.contains('translate-x-full')) {
+                sidebar.classList.remove('translate-x-full');
+                backdrop.classList.remove('opacity-0', 'pointer-events-none');
+            } else {
+                sidebar.classList.add('translate-x-full');
+                backdrop.classList.add('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function copyToClipboard(text, title) {
+            const tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            showToast(`${title} көшірілді: ${text}`);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = msg;
+            toast.classList.remove('hidden');
+
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        function updateNephriteFromInput(val) {
+            let amount = parseInt(val) || 0;
+            if (amount > 10000) amount = 10000;
+            
+            document.getElementById('nephriteRange').value = amount;
+            renderNephritePrice(amount);
+        }
+
+        function updateNephriteFromSlider(val) {
+            const amount = parseInt(val);
+            document.getElementById('nephriteInput').value = amount;
+            renderNephritePrice(amount);
+        }
+
+        function setNephriteAmount(amount) {
+            document.getElementById('nephriteInput').value = amount;
+            document.getElementById('nephriteRange').value = amount;
+            renderNephritePrice(amount);
+        }
+
+        function renderNephritePrice(amount) {
+            const price = amount;
+            document.getElementById('nephriteLabel').textContent = `${amount.toLocaleString()} нефрит`;
+            document.getElementById('nephritePrice').textContent = `${price.toLocaleString()} ₸`;
+        }
+
+        function buyNephrite() {
+            const amount = parseInt(document.getElementById('nephriteInput').value) || 0;
+            if (amount < 10) {
+                showToast('Минималды тапсырыс — 10 нефрит');
+                return;
+            }
+            openModal(`${amount.toLocaleString()} Нефрит`, amount);
+        }
+
+        function openModal(itemName, price) {
+            currentItemName = itemName;
+            currentItemPrice = price;
+
+            document.getElementById('modalItemTitle').textContent = `${itemName} — ${price.toLocaleString()} ₸`;
+            document.getElementById('modalSummaryItem').textContent = itemName;
+            document.getElementById('modalSummaryPrice').textContent = `${price.toLocaleString()} ₸`;
+
+            document.getElementById('purchaseModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('purchaseModal').classList.add('hidden');
+        }
+
+        function submitToTelegram(event) {
+            event.preventDefault();
+            const nickname = document.getElementById('nicknameInput').value.trim();
+
+            if (!nickname) {
+                showToast('Никнеймді енгізіңіз!');
+                return;
+            }
+
+            const message = `Сәлем👋! мен ${currentItemName} сатып алғым келеді ${currentItemPrice}₸ ник: ${nickname}`;
+            const encodedMessage = encodeURIComponent(message);
+            const tgUrl = `https://t.me/nexbr0?text=${encodedMessage}`;
+
+            closeModal();
+            document.getElementById('nicknameInput').value = '';
+            
+            window.open(tgUrl, '_blank');
+        }
+
+        // Snow Canvas background
+        const canvas = document.getElementById('snowCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const flakes = Array.from({ length: 60 }, () => ({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            r: Math.random() * 2 + 1,
+            d: Math.random() + 0.5,
+            opacity: Math.random() * 0.5 + 0.3
+        }));
+
+        function drawSnow() {
+            ctx.clearRect(0, 0, width, height);
+            
+            flakes.forEach(f => {
+                ctx.beginPath();
+                ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(180, 245, 255, ${f.opacity})`;
+                ctx.fill();
+
+                f.y += f.d;
+                f.x += Math.sin(f.y / 30) * 0.5;
+
+                if (f.y > height) {
+                    f.y = -10;
+                    f.x = Math.random() * width;
+                }
+            });
+
+            requestAnimationFrame(drawSnow);
+        }
+
+        drawSnow();
+    </script>
+</body>
+</html>
